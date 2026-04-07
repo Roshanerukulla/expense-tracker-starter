@@ -14,12 +14,29 @@ npm run preview   # Preview production build
 
 ## Architecture
 
-This is a single-file React app (no routing, no state management library). All logic lives in `src/App.jsx`:
+React + Vite app with no routing and no state management library. No persistence — data resets on page reload.
 
-- **State**: `transactions` array (id, description, amount, type, category, date) held in `useState`. No persistence — data resets on page reload.
-- **Derived values**: `totalIncome`, `totalExpenses`, and `balance` are computed inline from `transactions` on every render. `amount` is stored as a string but used in arithmetic — this is an intentional bug in the starter.
-- **Filtering**: `filterType` and `filterCategory` state produce `filteredTransactions` via inline filter chains; no separate filter component.
-- **Form**: Controlled inputs; `handleSubmit` appends a new transaction and resets fields.
-- **Styling**: Plain CSS in `src/App.css` (component styles) and `src/index.css` (global reset). CSS classes `income-amount`, `expense-amount`, and `balance-amount` are shared between the summary cards and the transaction table cells.
+### Component tree
 
-The app is intentionally a course starter — it has a known bug (string vs number arithmetic in totals), basic UI, and monolithic structure meant to be refactored during the course.
+```
+App
+├── Summary
+├── TransactionForm
+└── TransactionList
+```
+
+**`App.jsx`** — holds the single source of truth: the `transactions` array in `useState`. Passes `transactions` down to all three children and provides `handleAdd` as `onAdd` to `TransactionForm`.
+
+**`Summary.jsx`** — receives `transactions` and derives `totalIncome`, `totalExpenses`, and `balance` internally via `filter`/`reduce`.
+
+**`TransactionForm.jsx`** — owns all form field state (description, amount, type, category). On submit, calls `onAdd` with a fully constructed transaction object (amount as `parseFloat`). Resets fields after adding.
+
+**`TransactionList.jsx`** — receives `transactions` and owns its own `filterType`/`filterCategory` state internally, since filters don't need to be shared.
+
+### Shared constants
+
+`categories` array is currently duplicated in `TransactionForm.jsx` and `TransactionList.jsx`.
+
+### Styling
+
+Plain CSS in `src/App.css` (component styles) and `src/index.css` (global reset). Classes `income-amount`, `expense-amount`, and `balance-amount` are shared between `Summary` and the transaction table rows in `TransactionList`.
